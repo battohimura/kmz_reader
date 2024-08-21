@@ -101,7 +101,7 @@ def make_request(coordinates):
             "schedules": list(day),
             "coordinates": json.dumps(coord)
         }
-        response = requests.post("http://localhost:8000/v1/zones/", json=data, headers={"Content-Type": "application/json", "Authorization": "Token 769762086526fbeb51bb4c6269906e6d705ab224"})
+        response = requests.post("http://localhost:8000/v1/zones/", json=data, headers={"Content-Type": "application/json", "Authorization": "Token 7697xxxxxxxx"})
         print(response.json())
     print('Request finished')
 

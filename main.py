@@ -86,6 +86,32 @@ def get_coordinates_and_names(root, namespace):
         zone_name = get_zone_name(name.text, description.text)
         zone_day = get_zone_days(name.text)
         polygon = find_element(namespace, placemark, "Polygon")
+        different_route = False
+        if polygon is None:
+            multigeometry = find_element(namespace, placemark, "MultiGeometry")
+            if multigeometry is not None:
+                polygon = find_element(namespace, multigeometry, "Polygon", True)
+                multi_coordinates = []
+                for poly in polygon:
+                    outer_boundary = find_element(namespace, poly, "outerBoundaryIs")
+                    linear_ring = find_element(namespace, outer_boundary, "LinearRing")
+                    coordinates = find_element(namespace, linear_ring, "coordinates")
+                    if coordinates is not None and coordinates.text:
+                        cleaned_coordinates = clean_coordinates(coordinates.text)
+                        multi_coordinates.extend(cleaned_coordinates)
+                        different_route = True
+                coordinates_to_save.append((multi_coordinates, zone_name, zone_day))
+            else:
+                linestring = find_element(namespace, placemark, "LineString")
+                if linestring is not None:
+                    coordinates = find_element(namespace, linestring, "coordinates")
+                    if coordinates is not None and coordinates.text:
+                        cleaned_coordinates = clean_coordinates(coordinates.text)
+                        coordinates_to_save.append((cleaned_coordinates, zone_name, zone_day))
+                        different_route = True
+        if different_route:
+            different_route = False
+            continue
         outer_boundary = find_element(namespace, polygon, "outerBoundaryIs")
         linear_ring = find_element(namespace, outer_boundary, "LinearRing")
         coordinates = find_element(namespace, linear_ring, "coordinates")
@@ -101,7 +127,7 @@ def make_request(coordinates):
             "schedules": list(day),
             "coordinates": json.dumps(coord)
         }
-        response = requests.post("http://localhost:8000/v1/zones/", json=data, headers={"Content-Type": "application/json", "Authorization": "Token 7697xxxxxxxx"})
+        response = requests.post("http://localhost:8000/v1/zones/", json=data, headers={"Content-Type": "application/json", "Authorization": "Token 5eexxxx"})
         print(response.json())
     print('Request finished')
 
